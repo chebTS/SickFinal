@@ -21,7 +21,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -31,7 +30,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 	static final String SERVER_URL = "http://chebtest1.appspot.com/chebtest1";
 	private static final String TAG_FEED = "feed";
 	private static SharedPreferences mPreferences;
-	private List<ArticleInfo> mArticles;
+	private static List<ArticleInfo> mArticles;
 	private DownloderRSS downloadRSS;
 	//private ProgressDialog pd;
 	FragmentList fragment1;
@@ -52,7 +51,11 @@ public class FirstActivity extends SherlockFragmentActivity {
 				openJSON();
 			}
 		}
+		if (mArticles != null){
+			fragment1.setmArticlesLocal(mArticles);
+		}
 		downloadRSS.link(this);
+		
 	}
 
 	
