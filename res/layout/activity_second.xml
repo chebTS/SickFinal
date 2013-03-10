@@ -1,14 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FirstActivity" >
+    tools:context=".SecondActivity" >
 
     <fragment
-        android:id="@+id/fragment1"
-        android:name="org.geekhub.tsibrovsky.sickukrainefinal.fragments.FragmentList"
+        android:id="@+id/fragment2"
+        android:name="org.geekhub.tsibrovsky.sickukrainefinal.fragments.FragmentWeb"
         android:layout_width="wrap_content"
         android:layout_height="match_parent" />
-	
+
 </LinearLayout>
