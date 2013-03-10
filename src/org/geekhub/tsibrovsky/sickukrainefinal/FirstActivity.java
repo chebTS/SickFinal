@@ -16,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -58,6 +59,13 @@ public class FirstActivity extends SherlockFragmentActivity {
 		
 	}
 
+	public void viewArticle(ArticleInfo article){
+		Intent sendIntent = new Intent(getApplicationContext(), SecondActivity.class);
+		sendIntent.putExtra("url", article.getLinkURL());
+		Log.i("Put url in intent", article.getLinkURL());
+		startActivity(sendIntent);
+		
+	}
 	
 	public Object onRetainCustomNonConfigurationInstance() {
 		downloadRSS.unLink();
