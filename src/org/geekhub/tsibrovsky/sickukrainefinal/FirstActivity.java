@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -38,6 +37,12 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.ShareActionProvider;
 
+/**
+ * 
+ * @author Cheb
+ * Activity for downloading and showing titles list of articles
+ * If device is tablet in landscape - shows article in right part of screen.
+ */
 public class FirstActivity extends SherlockFragmentActivity {
 	static final String SERVER_URL = "http://chebtest1.appspot.com/chebtest1";
 	private static final String TAG_FEED = "feed";
@@ -50,7 +55,6 @@ public class FirstActivity extends SherlockFragmentActivity {
 	FragmentList fragment1;
 	FragmentWeb fragment2;
 	ArticleInfo curArticle = null;
-
 
 
 	@Override
@@ -79,6 +83,10 @@ public class FirstActivity extends SherlockFragmentActivity {
 		
 	}
 	
+	/**
+	 * 
+	 * @return cursor to database
+	 */
 	private Cursor getDataBaseData(){
 		Cursor cursor = getContentResolver().query(
 				ChebProvider.CONTENT_URI, 
@@ -122,7 +130,13 @@ public class FirstActivity extends SherlockFragmentActivity {
 			}	
 			return super.onCreateOptionsMenu(menu);
 	}
-			
+		
+	/**
+	 * 
+	 * @param id - id of article
+	 * @return true - if chosen article was liked previously 
+	 * 		   false - if not	
+	 */
 	private Boolean isCurrentArticleLiked(Long id){
 		Cursor cursor = getContentResolver().query(
 				ChebProvider.CONTENT_URI, 
@@ -232,7 +246,11 @@ public class FirstActivity extends SherlockFragmentActivity {
 	    return downloadRSS;
 	}
 	
-	
+	/**
+	 * 
+	 * @author Cheb
+	 * Download class
+	 */
 	static class DownloderRSS extends AsyncTask<Void, Void, Void>{		
 		FirstActivity activity;
 		String res;
@@ -264,6 +282,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 	
 	/**
 	 * @author Cheb
+	 * @param jsonString - JSON that was downloaded from SERVER_URL
 	 */
 	private void parseJSON(String jsonString){
 		JSONObject jRoot;
@@ -286,7 +305,8 @@ public class FirstActivity extends SherlockFragmentActivity {
 	
 	/**
 	 * @author Cheb
-	 * 
+	 * @param URL - URL to server
+	 * downloading JSON from URL
 	 */
 	private static String downloadJSON(String URL, Context context) {
 		StringBuilder sb = new StringBuilder();

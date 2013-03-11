@@ -12,6 +12,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+/**
+ * 
+ * @author Cheb
+ *
+ */
 public class TitlesAdapter extends ArrayAdapter<ArticleInfo> {
 	private LayoutInflater inflater;
 	private List<ArticleInfo> items;
@@ -30,9 +35,5 @@ public class TitlesAdapter extends ArrayAdapter<ArticleInfo> {
 		TextView text = (TextView)v.findViewById(R.id.txtArticleName);
 		text.setText(items.get(position).getTitle().toString());
 		return v;
-	}
-	
-	
-
-	
+	}	
 }

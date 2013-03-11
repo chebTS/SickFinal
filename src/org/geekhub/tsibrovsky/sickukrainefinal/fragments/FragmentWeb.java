@@ -12,6 +12,11 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
+/**
+ * 
+ * @author Cheb
+ * Fragment for showing articles
+ */
 public class FragmentWeb extends SherlockFragment {
 	private WebView web;
 	
@@ -27,6 +32,7 @@ public class FragmentWeb extends SherlockFragment {
 		web.getSettings().setUseWideViewPort(true);
 		web.getSettings().setJavaScriptEnabled(true);
 		web.getSettings().setBuiltInZoomControls(true);
+		web.getSettings().setDisplayZoomControls(false);
 		web.setWebViewClient(new WebViewClient() {
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 Toast.makeText(getSherlockActivity(), description, Toast.LENGTH_SHORT).show();
@@ -35,9 +41,3 @@ public class FragmentWeb extends SherlockFragment {
 		return v;
 	}
 }
-/*
- * mMessageContentView.setInitialScale(1);
-mMessageContentView.getSettings().setLoadWithOverviewMode(true);
-mMessageContentView.getSettings().setUseWideViewPort(true);
- 
-*/

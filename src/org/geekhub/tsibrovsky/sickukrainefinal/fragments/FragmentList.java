@@ -18,6 +18,11 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragment;
 
+/**
+ * 
+ * @author Cheb
+ *	Fragment for showing titles of articles
+ */
 public class FragmentList extends SherlockFragment {
 	private List<ArticleInfo> mArticlesLocal;
 	private ListView listTitles;
@@ -30,16 +35,12 @@ public class FragmentList extends SherlockFragment {
 		super.onCreate(savedInstanceState);
 		setRetainInstance(true);
 	}
-	
-	
 
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		this.activity = (FirstActivity)activity;
 	}
-
-
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -54,6 +55,9 @@ public class FragmentList extends SherlockFragment {
 		return v;
 	}
 
+	/**
+	 * Changing data for adapter
+	 */
 	public void setmArticlesLocal(List<ArticleInfo> mArticlesLocal) {
 		this.mArticlesLocal = mArticlesLocal;
 		adapter = new TitlesAdapter(getSherlockActivity().getApplicationContext(), R.layout.item_list_titles, mArticlesLocal);

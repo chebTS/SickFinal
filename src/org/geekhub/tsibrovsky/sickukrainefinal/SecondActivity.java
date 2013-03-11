@@ -16,6 +16,11 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.ShareActionProvider;
 
+/**
+ * 
+ * @author Cheb
+ * activity for showing FragmentWeb
+ */
 public class SecondActivity extends SherlockFragmentActivity {
 	private static String url;
 	private FragmentWeb frag2;
@@ -47,7 +52,11 @@ public class SecondActivity extends SherlockFragmentActivity {
 		bIsCurrentLiked = isCurrentArticleLiked();
 	}
 	
-	
+	/**
+	 * @author Cheb
+	 * @return true - if chosen article was liked previously 
+	 * 		   false - if not	
+	 */
 	private Boolean isCurrentArticleLiked(){
 		Cursor cursor = getContentResolver().query(
 				ChebProvider.CONTENT_URI, 
@@ -85,12 +94,9 @@ public class SecondActivity extends SherlockFragmentActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		Log.i("onCreateOptionsMenu", "onCreateOptionsMenu");
 		getSupportMenuInflater().inflate(R.menu.second_active, menu);
 		MenuItem menuItem = menu.findItem(R.id.share);
 		ShareActionProvider mShareActionProvider =  (ShareActionProvider) menuItem.getActionProvider();  
