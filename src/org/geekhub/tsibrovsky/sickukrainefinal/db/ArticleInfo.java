@@ -22,7 +22,13 @@ public class ArticleInfo {
 		id = Long.parseLong(linkURL.substring(linkURL.lastIndexOf("/")+1));
 	}
 	
-	
+	public ArticleInfo(String url, String id, String title, String description) {
+		super();
+		this.id = Long.parseLong(id);
+		this.linkURL = url;
+		this.title = title;
+		this.description = description;
+	}
 
 	public Long getId() {
 		return id;

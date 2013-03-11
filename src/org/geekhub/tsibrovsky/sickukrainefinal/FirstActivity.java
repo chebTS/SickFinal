@@ -10,6 +10,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.geekhub.tsibrovsky.sickukrainefinal.db.ArticleInfo;
+import org.geekhub.tsibrovsky.sickukrainefinal.db.ArticlesTable;
+import org.geekhub.tsibrovsky.sickukrainefinal.db.ChebProvider;
 import org.geekhub.tsibrovsky.sickukrainefinal.fragments.FragmentList;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,21 +20,27 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 //import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 
 public class FirstActivity extends SherlockFragmentActivity {
 	static final String SERVER_URL = "http://chebtest1.appspot.com/chebtest1";
 	private static final String TAG_FEED = "feed";
 	private static SharedPreferences mPreferences;
 	private static List<ArticleInfo> mArticles;
+	private static List<ArticleInfo> mArticlesFromDB;
 	private DownloderRSS downloadRSS;
+	private static Boolean isShowingLiked = false;
 	//private ProgressDialog pd;
 	FragmentList fragment1;
 
@@ -52,12 +60,81 @@ public class FirstActivity extends SherlockFragmentActivity {
 				openJSON();
 			}
 		}
-		if (mArticles != null){
-			fragment1.setmArticlesLocal(mArticles);
+		if (isShowingLiked){
+			fragment1.setmArticlesLocal(mArticlesFromDB);
+		}else{
+			if (mArticles != null){
+				fragment1.setmArticlesLocal(mArticles);
+			}
 		}
 		downloadRSS.link(this);
 		
 	}
+	
+	
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		getSupportMenuInflater().inflate(R.menu.first_active, menu);
+		MenuItem menuItem = menu.findItem(R.id.action_show_liked);
+		if (isShowingLiked){
+			menuItem.setTitle("Show all");
+		}else{
+			menuItem.setTitle("Show liked");
+			
+		}
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	
+	private Cursor getDataBaseData(){
+		Cursor cursor = getContentResolver().query(
+				ChebProvider.CONTENT_URI, 
+				ArticlesTable.PROJECTION, 
+				ArticlesTable.COLUMN_ID , 
+				null, null);
+		return cursor;
+		//Log.i("DB size", Integer.toString(cursor.getCount()) );
+	}
+	
+	//TODO add check onResume if we still have in db liked 
+
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.action_show_liked){
+			if (isShowingLiked){
+				fragment1.setmArticlesLocal(mArticles);
+				isShowingLiked = false;
+				invalidateOptionsMenu();
+			}else{
+				Cursor cursor  = getDataBaseData();
+				if (cursor.getCount() == 0){
+					Toast.makeText(getApplicationContext(), "There are no any liked articles yet", Toast.LENGTH_LONG).show();
+				}else{
+					mArticlesFromDB  = new ArrayList<ArticleInfo>();
+					while (cursor.moveToNext()) {
+						mArticlesFromDB.add(new ArticleInfo(cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+				    }
+					fragment1.setmArticlesLocal(mArticlesFromDB);
+					isShowingLiked = true;
+					invalidateOptionsMenu();
+				}
+			}
+		
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+
+
+	/**
+	 * @author Cheb
+	 * Open chosen article at second activity
+	 * @param article - chosen article
+	 */
 
 	public void viewArticle(ArticleInfo article){
 		Intent sendIntent = new Intent(getApplicationContext(), SecondActivity.class);
@@ -74,8 +151,6 @@ public class FirstActivity extends SherlockFragmentActivity {
 		downloadRSS.unLink();
 	    return downloadRSS;
 	}
-	
-	
 	
 	
 	static class DownloderRSS extends AsyncTask<Void, Void, Void>{		
@@ -124,6 +199,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 		for (int i = 0; i<jItems.length(); i++){
 			mArticles.add(new ArticleInfo(jItems.optJSONObject(i)));
 		}
+		isShowingLiked = false;
 		fragment1.setmArticlesLocal(mArticles);
 		
 	}
