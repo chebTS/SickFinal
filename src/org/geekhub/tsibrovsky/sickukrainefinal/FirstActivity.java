@@ -13,6 +13,7 @@ import org.geekhub.tsibrovsky.sickukrainefinal.db.ArticleInfo;
 import org.geekhub.tsibrovsky.sickukrainefinal.db.ArticlesTable;
 import org.geekhub.tsibrovsky.sickukrainefinal.db.ChebProvider;
 import org.geekhub.tsibrovsky.sickukrainefinal.fragments.FragmentList;
+import org.geekhub.tsibrovsky.sickukrainefinal.fragments.FragmentWeb;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +44,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 	private static Boolean isShowingLiked = false;
 	//private ProgressDialog pd;
 	FragmentList fragment1;
+	FragmentWeb fragment2;
 
 
 
@@ -51,6 +53,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_first);
 		fragment1 = (FragmentList)getSupportFragmentManager().findFragmentById(R.id.fragment1);
+		fragment2 = (FragmentWeb)getSupportFragmentManager().findFragmentById(R.id.fragment2);
 		downloadRSS = (DownloderRSS) getLastCustomNonConfigurationInstance();
 		if (downloadRSS == null) {
 			downloadRSS = new DownloderRSS();
@@ -157,16 +160,18 @@ public class FirstActivity extends SherlockFragmentActivity {
 	 * Open chosen article at second activity
 	 * @param article - chosen article
 	 */
-
 	public void viewArticle(ArticleInfo article){
-		Intent sendIntent = new Intent(getApplicationContext(), SecondActivity.class);
-		sendIntent.putExtra("url", article.getLinkURL());
-		sendIntent.putExtra("id", article.getId());
-		sendIntent.putExtra("title", article.getTitle());
-		sendIntent.putExtra("description", article.getDescription());
-		Log.i("Put url in intent", article.getLinkURL());
-		startActivity(sendIntent);
-		
+		if (fragment2.isInLayout()){
+			fragment2.setUrl(article.getLinkURL());
+		}else{
+			Intent sendIntent = new Intent(getApplicationContext(), SecondActivity.class);
+			sendIntent.putExtra("url", article.getLinkURL());
+			sendIntent.putExtra("id", article.getId());
+			sendIntent.putExtra("title", article.getTitle());
+			sendIntent.putExtra("description", article.getDescription());
+			Log.i("Put url in intent", article.getLinkURL());
+			startActivity(sendIntent);
+		}
 	}
 	
 	public Object onRetainCustomNonConfigurationInstance() {
