@@ -23,6 +23,8 @@ public class FragmentWeb extends SherlockFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_web, null);
 		web = (WebView)v.findViewById(R.id.webView1);
+		web.getSettings().setLoadWithOverviewMode(true);
+		web.getSettings().setUseWideViewPort(true);
 		web.getSettings().setJavaScriptEnabled(true);
 		web.getSettings().setBuiltInZoomControls(true);
 		web.setWebViewClient(new WebViewClient() {
@@ -33,3 +35,9 @@ public class FragmentWeb extends SherlockFragment {
 		return v;
 	}
 }
+/*
+ * mMessageContentView.setInitialScale(1);
+mMessageContentView.getSettings().setLoadWithOverviewMode(true);
+mMessageContentView.getSettings().setUseWideViewPort(true);
+ 
+*/

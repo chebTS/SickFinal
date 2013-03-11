@@ -32,5 +32,4 @@
             android:name="org.geekhub.tsibrovsky.sickukrainefinal.SecondActivity">
         </activity>
     </application>
-
 </manifest>
