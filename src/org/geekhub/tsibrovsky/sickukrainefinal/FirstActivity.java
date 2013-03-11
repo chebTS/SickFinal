@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -18,12 +19,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,6 +36,7 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 //import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.widget.ShareActionProvider;
 
 public class FirstActivity extends SherlockFragmentActivity {
 	static final String SERVER_URL = "http://chebtest1.appspot.com/chebtest1";
@@ -45,6 +49,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 	//private ProgressDialog pd;
 	FragmentList fragment1;
 	FragmentWeb fragment2;
+	ArticleInfo curArticle = null;
 
 
 
@@ -74,23 +79,6 @@ public class FirstActivity extends SherlockFragmentActivity {
 		
 	}
 	
-	
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		getSupportMenuInflater().inflate(R.menu.first_active, menu);
-		MenuItem menuItem = menu.findItem(R.id.action_show_liked);
-		if (isShowingLiked){
-			menuItem.setTitle("Show all");
-		}else{
-			menuItem.setTitle("Show liked");
-			
-		}
-		return super.onCreateOptionsMenu(menu);
-	}
-	
-	
 	private Cursor getDataBaseData(){
 		Cursor cursor = getContentResolver().query(
 				ChebProvider.CONTENT_URI, 
@@ -101,30 +89,53 @@ public class FirstActivity extends SherlockFragmentActivity {
 		//Log.i("DB size", Integer.toString(cursor.getCount()) );
 	}
 	
-	
-
-	
 	@Override
-	protected void onResume() {
-		super.onResume();
-		if (isShowingLiked){
-			Cursor cursor  = getDataBaseData();
-			if (cursor.getCount() == 0){
-				Toast.makeText(getApplicationContext(), "There are no any liked articles anymore", Toast.LENGTH_LONG).show();
-				isShowingLiked = false;
-				fragment1.setmArticlesLocal(mArticles);
-				invalidateOptionsMenu();
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+			getSupportMenuInflater().inflate(R.menu.first_active, menu);
+			MenuItem menuItem = menu.findItem(R.id.action_show_liked);
+			if (isShowingLiked){
+				menuItem.setTitle("Show all");
 			}else{
-				mArticlesFromDB  = new ArrayList<ArticleInfo>();
-				while (cursor.moveToNext()) {
-					mArticlesFromDB.add(new ArticleInfo(cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
-			    }
-				fragment1.setmArticlesLocal(mArticlesFromDB);
+				menuItem.setTitle("Show liked");
 			}
+			if(fragment2 != null){
+				if (fragment2.isInLayout()){
+					MenuItem menuItemShare = menu.findItem(R.id.share);
+					ShareActionProvider mShareActionProvider =  (ShareActionProvider) menuItemShare.getActionProvider();  
+					Intent shareIntent = new Intent(Intent.ACTION_SEND);
+				    shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+				    shareIntent.setType("text/plain");
+				    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.sharesubject));
+				    shareIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.sharetext));
+				    mShareActionProvider.setShareIntent(shareIntent);
+				    
+					if (curArticle!= null){
+						MenuItem menuItemLike = menu.findItem(R.id.like);
+					    if (isCurrentArticleLiked(curArticle.getId())){
+					    	menuItemLike.setIcon(R.drawable.ic_menu_liked);
+					    }else{
+					    	menuItemLike.setIcon(R.drawable.ic_menu_not_liked);
+					    }
+					}
+				}
+			}	
+			return super.onCreateOptionsMenu(menu);
+	}
+			
+	private Boolean isCurrentArticleLiked(Long id){
+		Cursor cursor = getContentResolver().query(
+				ChebProvider.CONTENT_URI, 
+				ArticlesTable.PROJECTION, 
+				ArticlesTable.COLUMN_ID +" = " + id.toString() , 
+				null, null);
+		Log.i("Count", Integer.toString(cursor.getCount()));
+		if (cursor.getCount() > 0){
+			return  true;	
+		}else{
+			return false;	
 		}
 	}
-
-
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -146,14 +157,46 @@ public class FirstActivity extends SherlockFragmentActivity {
 					isShowingLiked = true;
 					invalidateOptionsMenu();
 				}
-			}
-		
+			}		
 			return true;
+		}else if (item.getItemId() == R.id.like){
+			if (curArticle != null){	
+				if (isCurrentArticleLiked(curArticle.getId())){
+					Uri uri = Uri.parse(ChebProvider.CONTENT_URI + "/" + curArticle.getId());
+		    		getContentResolver().delete(uri, ArticlesTable.COLUMN_ID + "= ?", new String[]{String.valueOf(curArticle.getId())});
+				}else{
+					ContentValues values = new ContentValues();
+		    		values.put(ArticlesTable.COLUMN_ID, curArticle.getId().toString());
+		        	values.put(ArticlesTable.COLUMN_TITLE, curArticle.getTitle().toString());
+		        	values.put(ArticlesTable.COLUMN_CONTENT, curArticle.getDescription().toString());
+		        	values.put(ArticlesTable.COLUMN_URL, curArticle.getLinkURL().toString());
+		        	getContentResolver().insert(ChebProvider.CONTENT_URI, values);
+				}
+				invalidateOptionsMenu();
+			}
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
-
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (isShowingLiked){
+			Cursor cursor  = getDataBaseData();
+			if (cursor.getCount() == 0){
+				Toast.makeText(getApplicationContext(), "There are no any liked articles anymore", Toast.LENGTH_LONG).show();
+				isShowingLiked = false;
+				fragment1.setmArticlesLocal(mArticles);
+				invalidateOptionsMenu();
+			}else{
+				mArticlesFromDB  = new ArrayList<ArticleInfo>();
+				while (cursor.moveToNext()) {
+					mArticlesFromDB.add(new ArticleInfo(cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+			    }
+				fragment1.setmArticlesLocal(mArticlesFromDB);
+			}
+		}
+	}
 
 	/**
 	 * @author Cheb
@@ -161,8 +204,12 @@ public class FirstActivity extends SherlockFragmentActivity {
 	 * @param article - chosen article
 	 */
 	public void viewArticle(ArticleInfo article){
-		if (fragment2.isInLayout()){
-			fragment2.setUrl(article.getLinkURL());
+		if((fragment2 != null) &&(fragment2.isInLayout())){
+			//if (fragment2.isInLayout()){
+				fragment2.setUrl(article.getLinkURL());
+				curArticle = article;
+				invalidateOptionsMenu();
+			//}
 		}else{
 			Intent sendIntent = new Intent(getApplicationContext(), SecondActivity.class);
 			sendIntent.putExtra("url", article.getLinkURL());
@@ -284,5 +331,4 @@ public class FirstActivity extends SherlockFragmentActivity {
           }
           return false;
     }
-
 }
