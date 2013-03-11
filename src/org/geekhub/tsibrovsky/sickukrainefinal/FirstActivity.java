@@ -98,9 +98,31 @@ public class FirstActivity extends SherlockFragmentActivity {
 		//Log.i("DB size", Integer.toString(cursor.getCount()) );
 	}
 	
-	//TODO add check onResume if we still have in db liked 
+	
 
 	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (isShowingLiked){
+			Cursor cursor  = getDataBaseData();
+			if (cursor.getCount() == 0){
+				Toast.makeText(getApplicationContext(), "There are no any liked articles anymore", Toast.LENGTH_LONG).show();
+				isShowingLiked = false;
+				fragment1.setmArticlesLocal(mArticles);
+				invalidateOptionsMenu();
+			}else{
+				mArticlesFromDB  = new ArrayList<ArticleInfo>();
+				while (cursor.moveToNext()) {
+					mArticlesFromDB.add(new ArticleInfo(cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+			    }
+				fragment1.setmArticlesLocal(mArticlesFromDB);
+			}
+		}
+	}
+
+
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.action_show_liked){
