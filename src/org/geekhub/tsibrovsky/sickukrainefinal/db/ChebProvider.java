@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class ChebProvider extends ContentProvider {
-	private static final String AUTHORITY = "org.geekhub.tsibrovsky.sickukraine.database";
+	private static final String AUTHORITY = "org.geekhub.tsibrovsky.sickukrainefinal.database";
 	private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     private static final int ARTICLE_LIST = 1;
     private static final int ARTICLE_ITEM = 2;

@@ -62,6 +62,9 @@ public class FirstActivity extends SherlockFragmentActivity {
 	public void viewArticle(ArticleInfo article){
 		Intent sendIntent = new Intent(getApplicationContext(), SecondActivity.class);
 		sendIntent.putExtra("url", article.getLinkURL());
+		sendIntent.putExtra("id", article.getId());
+		sendIntent.putExtra("title", article.getTitle());
+		sendIntent.putExtra("description", article.getDescription());
 		Log.i("Put url in intent", article.getLinkURL());
 		startActivity(sendIntent);
 		
