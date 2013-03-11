@@ -164,6 +164,12 @@ public class FirstActivity extends SherlockFragmentActivity {
 				if (isCurrentArticleLiked(curArticle.getId())){
 					Uri uri = Uri.parse(ChebProvider.CONTENT_URI + "/" + curArticle.getId());
 		    		getContentResolver().delete(uri, ArticlesTable.COLUMN_ID + "= ?", new String[]{String.valueOf(curArticle.getId())});
+				
+		    		Cursor c = getDataBaseData();
+		    		if (c.getCount()==0){
+		    			fragment1.setmArticlesLocal(mArticles);
+						isShowingLiked = false;
+		    		}
 				}else{
 					ContentValues values = new ContentValues();
 		    		values.put(ArticlesTable.COLUMN_ID, curArticle.getId().toString());
