@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -32,10 +33,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-//import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.ShareActionProvider;
+//import com.actionbarsherlock.view.Menu;
 
 /**
  * 
@@ -51,7 +52,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 	private static List<ArticleInfo> mArticlesFromDB;
 	private DownloderRSS downloadRSS;
 	private static Boolean isShowingLiked = false;
-	//private ProgressDialog pd;
+	private ProgressDialog pd;
 	FragmentList fragment1;
 	FragmentWeb fragment2;
 	ArticleInfo curArticle = null;
@@ -61,15 +62,21 @@ public class FirstActivity extends SherlockFragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_first);
+		
 		fragment1 = (FragmentList)getSupportFragmentManager().findFragmentById(R.id.fragment1);
 		fragment2 = (FragmentWeb)getSupportFragmentManager().findFragmentById(R.id.fragment2);
 		downloadRSS = (DownloderRSS) getLastCustomNonConfigurationInstance();
 		if (downloadRSS == null) {
 			downloadRSS = new DownloderRSS();
+			pd = new ProgressDialog(FirstActivity.this, ProgressDialog.THEME_HOLO_DARK);
+			pd.setTitle("Loading...");
+			pd.setCancelable(false);
+			pd.show();
 			if (isConnectingToInternet()){
 				downloadRSS.execute();		
 			}else{
 				openJSON();
+				
 			}
 		}
 		if (isShowingLiked){
@@ -79,7 +86,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 				fragment1.setmArticlesLocal(mArticles);
 			}
 		}
-		downloadRSS.link(this);
+		downloadRSS.link(this);		
 		
 	}
 	
@@ -300,7 +307,9 @@ public class FirstActivity extends SherlockFragmentActivity {
 		}
 		isShowingLiked = false;
 		fragment1.setmArticlesLocal(mArticles);
-		
+		if(pd !=null ){
+			pd.dismiss();
+		}
 	}
 	
 	/**
