@@ -41,24 +41,30 @@ public class FragmentList extends SherlockFragment {
 		super.onAttach(activity);
 		this.activity = (FirstActivity)activity;
 	}
+	
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.fragment_list, null);
-		listTitles = (ListView)v.findViewById(R.id.listViewTitles);
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		listTitles.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				activity.viewArticle(mArticlesLocal.get(position));
 			}
 		});
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+		View v = inflater.inflate(R.layout.fragment_list, null);
+		listTitles = (ListView)v.findViewById(R.id.listViewTitles);		
 		return v;
 	}
 
 	/**
 	 * Changing data for adapter
 	 */
-	public void setmArticlesLocal(List<ArticleInfo> mArticlesLocal) {
+	public void setArticlesLocal(List<ArticleInfo> mArticlesLocal) {
 		this.mArticlesLocal = mArticlesLocal;
 		adapter = new TitlesAdapter(getSherlockActivity().getApplicationContext(), R.layout.item_list_titles, mArticlesLocal);
 		listTitles.setAdapter(adapter);

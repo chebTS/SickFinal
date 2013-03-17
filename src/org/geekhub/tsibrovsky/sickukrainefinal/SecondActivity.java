@@ -27,12 +27,22 @@ public class SecondActivity extends SherlockFragmentActivity {
 	private Long id;
 	private Boolean bIsCurrentLiked;
 	private String title, description;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_second);
 		frag2 = (FragmentWeb)getSupportFragmentManager().findFragmentById(R.id.fragment2);
+		init();
+		bIsCurrentLiked = isCurrentArticleLiked();
+	}
+	
+	/**
+	 * init local variables from intent
+	 * @author Cheb
+	 */
+	private void init(){
+		//TODO make article serializable
 		if (getIntent().hasExtra("url")){			
 			url = getIntent().getStringExtra("url");
 			Log.i("Get url from intent", url);
@@ -48,8 +58,6 @@ public class SecondActivity extends SherlockFragmentActivity {
 		if (getIntent().hasExtra("description")){			
 			description = getIntent().getStringExtra("description");
 		}
-		
-		bIsCurrentLiked = isCurrentArticleLiked();
 	}
 	
 	/**
@@ -75,37 +83,39 @@ public class SecondActivity extends SherlockFragmentActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == R.id.like){
-			if (bIsCurrentLiked){
-				Uri uri = Uri.parse(ChebProvider.CONTENT_URI + "/" + id);
-	    		getContentResolver().delete(uri, ArticlesTable.COLUMN_ID + "= ?", new String[]{String.valueOf(id)});
-	    		bIsCurrentLiked = false;
-			}else{
-				ContentValues values = new ContentValues();
-	    		values.put(ArticlesTable.COLUMN_ID, id.toString());
-	        	values.put(ArticlesTable.COLUMN_TITLE, title.toString());
-	        	values.put(ArticlesTable.COLUMN_CONTENT, description.toString());
-	        	values.put(ArticlesTable.COLUMN_URL, url.toString());
-	        	getContentResolver().insert(ChebProvider.CONTENT_URI, values);
-	        	bIsCurrentLiked = true;	
-			}
-			invalidateOptionsMenu();
+			likePressed();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	/**
+	 * @author Cheb
+	 * Called when like menu item pressed.
+	 * add/delete article in/from favorites;
+	 */
+	private void likePressed(){
+		if (bIsCurrentLiked){
+			Uri uri = Uri.parse(ChebProvider.CONTENT_URI + "/" + id);
+    		getContentResolver().delete(uri, ArticlesTable.COLUMN_ID + "= ?", new String[]{String.valueOf(id)});
+    		bIsCurrentLiked = false;
+		}else{
+			ContentValues values = new ContentValues();
+    		values.put(ArticlesTable.COLUMN_ID, id.toString());
+        	values.put(ArticlesTable.COLUMN_TITLE, title.toString());
+        	values.put(ArticlesTable.COLUMN_CONTENT, description.toString());
+        	values.put(ArticlesTable.COLUMN_URL, url.toString());
+        	getContentResolver().insert(ChebProvider.CONTENT_URI, values);
+        	bIsCurrentLiked = true;	
+		}
+		invalidateOptionsMenu();
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		getSupportMenuInflater().inflate(R.menu.second_active, menu);
-		MenuItem menuItem = menu.findItem(R.id.share);
-		ShareActionProvider mShareActionProvider =  (ShareActionProvider) menuItem.getActionProvider();  
-		Intent shareIntent = new Intent(Intent.ACTION_SEND);
-	    shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-	    shareIntent.setType("text/plain");
-	    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.sharesubject));
-	    shareIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.sharetext));
-	    mShareActionProvider.setShareIntent(shareIntent);
+		getSupportMenuInflater().inflate(R.menu.second_active, menu);		
+	    shareMenuItem(menu);
 	    //Like
 	    MenuItem menuItemLike = menu.findItem(R.id.like);
 	    if (bIsCurrentLiked){
@@ -114,5 +124,21 @@ public class SecondActivity extends SherlockFragmentActivity {
 	    	menuItemLike.setIcon(R.drawable.ic_menu_not_liked);
 	    }
 		return super.onCreateOptionsMenu(menu);
+	}
+	
+	/**
+	 * @author Cheb
+	 * Share button on menu
+	 * @param menu
+	 */
+	private void shareMenuItem(Menu menu){
+		MenuItem menuItem = menu.findItem(R.id.share);
+		ShareActionProvider mShareActionProvider =  (ShareActionProvider) menuItem.getActionProvider();  
+		Intent shareIntent = new Intent(Intent.ACTION_SEND);
+	    shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+	    shareIntent.setType("text/plain");
+	    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.sharesubject));
+	    shareIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.sharetext));
+	    mShareActionProvider.setShareIntent(shareIntent);
 	}
 }

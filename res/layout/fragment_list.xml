@@ -4,8 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
  	<ListView
- 	    android:layout_marginRight="10dp"
- 	    android:layout_marginLeft="10dp"
+ 	    android:paddingLeft="10dp"
+ 	    android:paddingRight="10dp"
+ 	    android:dividerHeight="3dp"
         android:id="@+id/listViewTitles"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >

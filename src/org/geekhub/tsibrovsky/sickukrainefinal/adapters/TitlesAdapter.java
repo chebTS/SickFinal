@@ -20,11 +20,11 @@ import android.widget.TextView;
 public class TitlesAdapter extends ArrayAdapter<ArticleInfo> {
 	private LayoutInflater inflater;
 	private List<ArticleInfo> items;
-	private Context context;
+	//private Context context;
 	
 	public TitlesAdapter(Context context, int textViewResourceId, List<ArticleInfo> objects) {
 		super(context, textViewResourceId, objects);
-		this.context = context;
+		//this.context = context;
 		inflater =  LayoutInflater.from(context);
 		items = objects;
 	}

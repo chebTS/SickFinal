@@ -1,11 +1,8 @@
 package org.geekhub.tsibrovsky.sickukrainefinal.fragments;
 
 import org.geekhub.tsibrovsky.sickukrainefinal.R;
+import org.geekhub.tsibrovsky.sickukrainefinal.helpers.Helper;
 
-import android.app.ProgressDialog;
-import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +22,7 @@ public class FragmentWeb extends SherlockFragment {
 	private WebView web;
 	
 	public void setUrl(String url){
-		if (isConnectingToInternet()){
+		if (Helper.isConnectingToInternet(getSherlockActivity())){
 			//TODO save webview content
 			web.loadUrl(url);
 		}else{
@@ -33,10 +30,10 @@ public class FragmentWeb extends SherlockFragment {
 		}
 	}
 	
+	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.fragment_web, null);
-		web = (WebView)v.findViewById(R.id.webView1);
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		web.getSettings().setLoadWithOverviewMode(true);
 		web.getSettings().setUseWideViewPort(true);
 		web.getSettings().setJavaScriptEnabled(true);
@@ -47,25 +44,13 @@ public class FragmentWeb extends SherlockFragment {
                 Toast.makeText(getSherlockActivity(), description, Toast.LENGTH_SHORT).show();
             }
         });	
-		return v;
 	}
 
-	/**
-	 * @author Cheb
-	 * @return internet conectivity status
-	 */
-	public  boolean isConnectingToInternet(){
-        ConnectivityManager connectivity = (ConnectivityManager) getSherlockActivity().getSystemService(getSherlockActivity().CONNECTIVITY_SERVICE);
-          if (connectivity != null){
-              NetworkInfo[] info = connectivity.getAllNetworkInfo();
-              if (info != null){
-                  for (int i = 0; i < info.length; i++){
-                      if (info[i].getState() == NetworkInfo.State.CONNECTED){
-                          return true;
-                      }
-                  }
-              }
-          }
-          return false;
-    }
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+		View v = inflater.inflate(R.layout.fragment_web, null);
+		web = (WebView)v.findViewById(R.id.webView1);		
+		return v;
+	}
 }

@@ -6,7 +6,6 @@ package org.geekhub.tsibrovsky.sickukrainefinal.db;
 
 import org.json.JSONObject;
 
-import android.util.Log;
 
 public class ArticleInfo {
 	Long id;
@@ -34,19 +33,13 @@ public class ArticleInfo {
 		return id;
 	}
 
-
-
 	public String getPubDate() {
 		return pubDate;
 	}
 
-
-
 	public String getDescription() {
 		return description;
 	}
-
-
 
 	public String getTitle() {
 		return title;
@@ -55,8 +48,6 @@ public class ArticleInfo {
 	public String getLinkURL() {
 		return linkURL;
 	}
-	
-	
 	
 }
 /*

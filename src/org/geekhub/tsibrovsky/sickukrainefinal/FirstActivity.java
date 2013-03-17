@@ -1,33 +1,26 @@
 package org.geekhub.tsibrovsky.sickukrainefinal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.geekhub.tsibrovsky.sickukrainefinal.db.ArticleInfo;
 import org.geekhub.tsibrovsky.sickukrainefinal.db.ArticlesTable;
 import org.geekhub.tsibrovsky.sickukrainefinal.db.ChebProvider;
 import org.geekhub.tsibrovsky.sickukrainefinal.fragments.FragmentList;
 import org.geekhub.tsibrovsky.sickukrainefinal.fragments.FragmentWeb;
+import org.geekhub.tsibrovsky.sickukrainefinal.helpers.Helper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -36,7 +29,6 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.ShareActionProvider;
-//import com.actionbarsherlock.view.Menu;
 
 /**
  * 
@@ -65,6 +57,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 		
 		fragment1 = (FragmentList)getSupportFragmentManager().findFragmentById(R.id.fragment1);
 		fragment2 = (FragmentWeb)getSupportFragmentManager().findFragmentById(R.id.fragment2);
+		
 		downloadRSS = (DownloderRSS) getLastCustomNonConfigurationInstance();
 		if (downloadRSS == null) {
 			downloadRSS = new DownloderRSS();
@@ -72,7 +65,8 @@ public class FirstActivity extends SherlockFragmentActivity {
 			pd.setTitle("Loading...");
 			pd.setCancelable(false);
 			pd.show();
-			if (isConnectingToInternet()){
+			
+			if (Helper.isConnectingToInternet(this)){
 				downloadRSS.execute();		
 			}else{
 				openJSON();
@@ -80,18 +74,17 @@ public class FirstActivity extends SherlockFragmentActivity {
 			}
 		}
 		if (isShowingLiked){
-			fragment1.setmArticlesLocal(mArticlesFromDB);
+			fragment1.setArticlesLocal(mArticlesFromDB);
 		}else{
 			if (mArticles != null){
-				fragment1.setmArticlesLocal(mArticles);
+				fragment1.setArticlesLocal(mArticles);
 			}
 		}
-		downloadRSS.link(this);		
-		
+		downloadRSS.link(this);				
 	}
 	
 	/**
-	 * 
+	 * @author Cheb
 	 * @return cursor to database
 	 */
 	private Cursor getDataBaseData(){
@@ -114,32 +107,42 @@ public class FirstActivity extends SherlockFragmentActivity {
 			}else{
 				menuItem.setTitle("Show liked");
 			}
-			if(fragment2 != null){
-				if (fragment2.isInLayout()){
-					MenuItem menuItemShare = menu.findItem(R.id.share);
-					ShareActionProvider mShareActionProvider =  (ShareActionProvider) menuItemShare.getActionProvider();  
-					Intent shareIntent = new Intent(Intent.ACTION_SEND);
-				    shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-				    shareIntent.setType("text/plain");
-				    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.sharesubject));
-				    shareIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.sharetext));
-				    mShareActionProvider.setShareIntent(shareIntent);
-				    
-					if (curArticle!= null){
-						MenuItem menuItemLike = menu.findItem(R.id.like);
-					    if (isCurrentArticleLiked(curArticle.getId())){
-					    	menuItemLike.setIcon(R.drawable.ic_menu_liked);
-					    }else{
-					    	menuItemLike.setIcon(R.drawable.ic_menu_not_liked);
-					    }
-					}
-				}
-			}	
+			tabletLandMenu(menu);
 			return super.onCreateOptionsMenu(menu);
 	}
+	
+	/**
+	 * @author Cheb
+	 * Making menu for tablet in landscape
+	 * @param menu
+	 */
+	private void tabletLandMenu(Menu menu){
+		if(fragment2 != null){
+			if (fragment2.isInLayout()){
+				MenuItem menuItemShare = menu.findItem(R.id.share);
+				ShareActionProvider mShareActionProvider =  (ShareActionProvider) menuItemShare.getActionProvider();  
+				Intent shareIntent = new Intent(Intent.ACTION_SEND);
+			    shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+			    shareIntent.setType("text/plain");
+			    shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.sharesubject));
+			    shareIntent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.sharetext));
+			    mShareActionProvider.setShareIntent(shareIntent);			    
+				if (curArticle!= null){
+					MenuItem menuItemLike = menu.findItem(R.id.like);
+				    if (isCurrentArticleLiked(curArticle.getId())){
+				    	menuItemLike.setIcon(R.drawable.ic_menu_liked);
+				    }else{
+				    	menuItemLike.setIcon(R.drawable.ic_menu_not_liked);
+				    }
+				}
+			}
+		}	
+	}
+	
 		
 	/**
 	 * 
+	 * @author Cheb
 	 * @param id - id of article
 	 * @return true - if chosen article was liked previously 
 	 * 		   false - if not	
@@ -160,51 +163,72 @@ public class FirstActivity extends SherlockFragmentActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.action_show_liked){
-			if (isShowingLiked){
-				fragment1.setmArticlesLocal(mArticles);
-				isShowingLiked = false;
-				invalidateOptionsMenu();
+		switch (item.getItemId()) {
+		case R.id.action_show_liked:
+			switchContent();		
+			break;
+		case R.id.like:
+			likePressed();				
+			break;
+		default:
+			break;
+		}		
+		return super.onOptionsItemSelected(item);
+	}
+	
+	/**
+	 * @author Cheb
+	 * change content of listview (from favorites or all)
+	 */
+	private void switchContent(){
+		if (isShowingLiked){
+			fragment1.setArticlesLocal(mArticles);
+			isShowingLiked = false;
+			invalidateOptionsMenu();
+		}else{
+			Cursor cursor  = getDataBaseData();
+			if (cursor.getCount() == 0){
+				Toast.makeText(getApplicationContext(), "There are no any liked articles yet", Toast.LENGTH_LONG).show();
 			}else{
-				Cursor cursor  = getDataBaseData();
-				if (cursor.getCount() == 0){
-					Toast.makeText(getApplicationContext(), "There are no any liked articles yet", Toast.LENGTH_LONG).show();
-				}else{
-					mArticlesFromDB  = new ArrayList<ArticleInfo>();
-					while (cursor.moveToNext()) {
-						mArticlesFromDB.add(new ArticleInfo(cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
-				    }
-					fragment1.setmArticlesLocal(mArticlesFromDB);
-					isShowingLiked = true;
-					invalidateOptionsMenu();
-				}
-			}		
-			return true;
-		}else if (item.getItemId() == R.id.like){
-			if (curArticle != null){	
-				if (isCurrentArticleLiked(curArticle.getId())){
-					Uri uri = Uri.parse(ChebProvider.CONTENT_URI + "/" + curArticle.getId());
-		    		getContentResolver().delete(uri, ArticlesTable.COLUMN_ID + "= ?", new String[]{String.valueOf(curArticle.getId())});
-				
-		    		Cursor c = getDataBaseData();
-		    		if (c.getCount()==0){
-		    			fragment1.setmArticlesLocal(mArticles);
-						isShowingLiked = false;
-		    		}
-				}else{
-					ContentValues values = new ContentValues();
-		    		values.put(ArticlesTable.COLUMN_ID, curArticle.getId().toString());
-		        	values.put(ArticlesTable.COLUMN_TITLE, curArticle.getTitle().toString());
-		        	values.put(ArticlesTable.COLUMN_CONTENT, curArticle.getDescription().toString());
-		        	values.put(ArticlesTable.COLUMN_URL, curArticle.getLinkURL().toString());
-		        	getContentResolver().insert(ChebProvider.CONTENT_URI, values);
-				}
+				mArticlesFromDB  = new ArrayList<ArticleInfo>();
+				while (cursor.moveToNext()) {
+					mArticlesFromDB.add(new ArticleInfo(cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
+			    }
+				fragment1.setArticlesLocal(mArticlesFromDB);
+				isShowingLiked = true;
 				invalidateOptionsMenu();
 			}
 		}
-		return super.onOptionsItemSelected(item);
 	}
 
+	/**
+	 * @author Cheb
+	 * Called when like menu item pressed.
+	 * add/delete article in/from favorites;
+	 */
+	private void likePressed(){
+		if (curArticle != null){	
+			if (isCurrentArticleLiked(curArticle.getId())){
+				Uri uri = Uri.parse(ChebProvider.CONTENT_URI + "/" + curArticle.getId());
+	    		getContentResolver().delete(uri, ArticlesTable.COLUMN_ID + "= ?", new String[]{String.valueOf(curArticle.getId())});			
+	    		Cursor c = getDataBaseData();
+	    		if (c.getCount()==0){
+	    			fragment1.setArticlesLocal(mArticles);
+					isShowingLiked = false;
+	    		}
+			}else{
+				ContentValues values = new ContentValues();
+	    		values.put(ArticlesTable.COLUMN_ID, curArticle.getId().toString());
+	        	values.put(ArticlesTable.COLUMN_TITLE, curArticle.getTitle().toString());
+	        	values.put(ArticlesTable.COLUMN_CONTENT, curArticle.getDescription().toString());
+	        	values.put(ArticlesTable.COLUMN_URL, curArticle.getLinkURL().toString());
+	        	getContentResolver().insert(ChebProvider.CONTENT_URI, values);
+			}
+			invalidateOptionsMenu();
+		}
+	}
+	
+	//TODO make it using broadcast!!
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -213,14 +237,14 @@ public class FirstActivity extends SherlockFragmentActivity {
 			if (cursor.getCount() == 0){
 				Toast.makeText(getApplicationContext(), "There are no any liked articles anymore", Toast.LENGTH_LONG).show();
 				isShowingLiked = false;
-				fragment1.setmArticlesLocal(mArticles);
+				fragment1.setArticlesLocal(mArticles);
 				invalidateOptionsMenu();
 			}else{
 				mArticlesFromDB  = new ArrayList<ArticleInfo>();
 				while (cursor.moveToNext()) {
 					mArticlesFromDB.add(new ArticleInfo(cursor.getString(4), cursor.getString(1), cursor.getString(2), cursor.getString(3)));
 			    }
-				fragment1.setmArticlesLocal(mArticlesFromDB);
+				fragment1.setArticlesLocal(mArticlesFromDB);
 			}
 		}
 	}
@@ -270,8 +294,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 
 	    @Override
 		protected Void doInBackground(Void... params) {
-	    	res = downloadJSON(SERVER_URL, activity);
-			//activity.parseJSON(downloadJSON(SERVER_URL, activity));
+	    	res = Helper.downloadJSON(SERVER_URL, activity, mPreferences);
 			return null;
 		}
 		@Override
@@ -298,6 +321,7 @@ public class FirstActivity extends SherlockFragmentActivity {
 		try {
 			jRoot = new JSONObject(jsonString);
 		} catch (JSONException e) {
+			Toast.makeText(this, "JSON parse error", Toast.LENGTH_LONG).show();
 			return;
 		}
 		jItems = jRoot.optJSONObject("rss").optJSONObject("channel").optJSONArray("item");
@@ -306,64 +330,9 @@ public class FirstActivity extends SherlockFragmentActivity {
 			mArticles.add(new ArticleInfo(jItems.optJSONObject(i)));
 		}
 		isShowingLiked = false;
-		fragment1.setmArticlesLocal(mArticles);
+		fragment1.setArticlesLocal(mArticles);
 		if(pd !=null ){
 			pd.dismiss();
 		}
 	}
-	
-	/**
-	 * @author Cheb
-	 * @param URL - URL to server
-	 * downloading JSON from URL
-	 */
-	private static String downloadJSON(String URL, Context context) {
-		StringBuilder sb = new StringBuilder();
-		DefaultHttpClient mHttpClient = new DefaultHttpClient();
-		HttpGet dhttpget = new HttpGet(URL);
-		HttpResponse dresponse = null;
-		try{
-			dresponse = mHttpClient.execute(dhttpget);
-		}catch (IOException e) {
-			e.printStackTrace();
-		}
-		int status = dresponse.getStatusLine().getStatusCode();
-		if (status == 200){
-			char[] buffer = new char[1];
-			try{
-				InputStream content = dresponse.getEntity().getContent();
-	            InputStreamReader isr = new InputStreamReader(content);
-	            while (isr.read(buffer) != -1) {
-	                sb.append(buffer);
-	            }
-			}catch (IOException e) {
-				e.printStackTrace();
-			}
-			//saving JSON 
-			mPreferences = context.getSharedPreferences(TAG_FEED, 0); 
-			mPreferences.edit().putString(TAG_FEED, sb.toString()).commit();
-		}else{	
-			Log.i("Error","Connection error : "+ Integer.toString(status));
-		}
-		return sb.toString();
-	}
-	
-	/**
-	 * @author Cheb
-	 * @return internet conectivity status
-	 */
-	public  boolean isConnectingToInternet(){
-        ConnectivityManager connectivity = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-          if (connectivity != null){
-              NetworkInfo[] info = connectivity.getAllNetworkInfo();
-              if (info != null){
-                  for (int i = 0; i < info.length; i++){
-                      if (info[i].getState() == NetworkInfo.State.CONNECTED){
-                          return true;
-                      }
-                  }
-              }
-          }
-          return false;
-    }
 }
