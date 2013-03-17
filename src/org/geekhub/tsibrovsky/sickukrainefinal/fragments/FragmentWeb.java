@@ -24,6 +24,7 @@ public class FragmentWeb extends SherlockFragment {
 	public void setUrl(String url){
 		if (Helper.isConnectingToInternet(getSherlockActivity())){
 			//TODO save webview content
+			//http://developer.alexanderklimov.ru/android/library/jsoup.php
 			web.loadUrl(url);
 		}else{
 			//TODO try to load saved content
